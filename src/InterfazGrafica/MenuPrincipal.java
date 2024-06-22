@@ -2,7 +2,10 @@ package InterfazGrafica;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class MenuPrincipal extends JFrame {
     private JPanel mainPanel;
@@ -14,7 +17,6 @@ public class MenuPrincipal extends JFrame {
     private JButton proveedoresButton;
     private JButton clientesButton;
     private JButton ventaButton;
-    private JTabbedPane tabbedPane1;
     private JTable historialTable;
     private JPanel vesTitePanel;
     private JPanel botonesPanel;
@@ -27,6 +29,9 @@ public class MenuPrincipal extends JFrame {
     private JButton actualizarButton;
     private JTextField BuscarFechaText;
     private JButton buscarFechButton;
+    private JTabbedPane tabbedPane1;
+    private JButton agregarRopaButton;
+    private JTable ropaTable;
 
     public MenuPrincipal(){
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,9 +43,14 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(buscarFechButton);
 
 
-        String[] columnNames = {"Fecha", "Monto Inicial", "Entrada", "Salida",  "Nota"};
-        DefaultTableModel model = new DefaultTableModel(columnNames,0);
-        historialTable.setModel(model);
+        String[] columnNames1 = {"Fecha", "Monto Inicial", "Entrada", "Salida",  "Nota"};
+        DefaultTableModel model1 = new DefaultTableModel(columnNames1,0);
+        historialTable.setModel(model1);
+
+        String[] columnNames2 = {"Id", "Nombre", "Talle", "Categoria", "Precio", "Stock"};
+        DefaultTableModel model2 = new DefaultTableModel(columnNames2,0);
+        ropaTable.setModel(model2);
+
 
     }
     public void redondear(){
@@ -48,6 +58,7 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(cerrarCajaButton);
         redondeoButon(actualizarButton);
         redondeoButon(buscarFechButton);
+        redondeoButon(agregarRopaButton);
     }
     public void redondeoButon(JButton buton){
 
