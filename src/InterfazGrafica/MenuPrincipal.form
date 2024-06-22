@@ -75,7 +75,7 @@
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
               <focusable value="true"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <hideActionText value="false"/>
               <horizontalTextPosition value="2"/>
@@ -94,7 +94,7 @@
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalAlignment value="0"/>
               <horizontalTextPosition value="2"/>
@@ -115,7 +115,7 @@
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalAlignment value="0"/>
               <horizontalTextPosition value="10"/>
@@ -141,7 +141,7 @@
               <contentAreaFilled value="false"/>
               <defaultCapable value="false"/>
               <focusPainted value="false"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalAlignment value="0"/>
               <horizontalTextPosition value="2"/>
@@ -160,7 +160,7 @@
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalTextPosition value="2"/>
               <icon value="Imagenes/icon _settings_.png"/>
@@ -179,7 +179,7 @@
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
               <focusable value="true"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalTextPosition value="2"/>
               <icon value="Imagenes/Personality.png"/>
@@ -197,7 +197,7 @@
               <borderPainted value="false"/>
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalTextPosition value="2"/>
               <icon value="Imagenes/Emergency Exit.png"/>
@@ -216,7 +216,7 @@
               <contentAreaFilled value="false"/>
               <focusPainted value="false"/>
               <focusable value="true"/>
-              <font name="Copperplate Gothic Bold" size="16"/>
+              <font name="Inter" size="16"/>
               <foreground color="-1"/>
               <horizontalTextPosition value="2"/>
               <icon value="Imagenes/Clothes.png"/>
