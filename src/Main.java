@@ -14,5 +14,6 @@ public class Main {
                     frame.setLocationRelativeTo(null);
                 }
             });
+        System.out.println("hola");
     }
 }
