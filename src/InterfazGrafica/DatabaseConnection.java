@@ -1,4 +1,5 @@
-import javax.swing.*;
+package InterfazGrafica;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,12 +9,16 @@ public class DatabaseConnection {
     private static final String USER = "root";
     private static final String PASSWORD = System.getenv("DB_PASSWORD");
 
-    public Connection getConnection() {
+    static {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error conectando a la base de datos");
+            e.printStackTrace();
         }
-        return null;
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }
+

@@ -2,10 +2,11 @@ package InterfazGrafica;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.*;
 
 public class MenuPrincipal extends JFrame {
     private JPanel mainPanel;
@@ -32,35 +33,38 @@ public class MenuPrincipal extends JFrame {
     private JTabbedPane tabbedPane1;
     private JButton agregarRopaButton;
     private JTable ropaTable;
+    private JTable compraTable;
+    private JButton comprarButton;
+    private JButton agregarClienteButton;
+    private JButton agregarProveedorButton;
+    private JButton venderButton;
+    private JTable ventaTable;
+    private JTable clientesTable;
+    private JTable proveedorTable;
 
-    public MenuPrincipal(){
+    public MenuPrincipal() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(mainPanel);
         pack();
-        redondeoButon(abrirCajaButton);
-        redondeoButon(cerrarCajaButton);
-        redondeoButon(actualizarButton);
-        redondeoButon(buscarFechButton);
-
-
-        String[] columnNames1 = {"Fecha", "Monto Inicial", "Entrada", "Salida",  "Nota"};
-        DefaultTableModel model1 = new DefaultTableModel(columnNames1,0);
-        historialTable.setModel(model1);
-
-        String[] columnNames2 = {"Id", "Nombre", "Talle", "Categoria", "Precio", "Stock"};
-        DefaultTableModel model2 = new DefaultTableModel(columnNames2,0);
-        ropaTable.setModel(model2);
-
+        redondearBotones();
+        crearTablas();
+        agregarActionListeners();
 
     }
-    public void redondear(){
+
+    public void redondearBotones() {
         redondeoButon(abrirCajaButton);
         redondeoButon(cerrarCajaButton);
         redondeoButon(actualizarButton);
         redondeoButon(buscarFechButton);
         redondeoButon(agregarRopaButton);
+        redondeoButon(agregarClienteButton);
+        redondeoButon(agregarProveedorButton);
+        redondeoButon(comprarButton);
+        redondeoButon(venderButton);
     }
-    public void redondeoButon(JButton buton){
+
+    public void redondeoButon(JButton buton) {
 
         Font boldFont = new Font(buton.getFont().getName(), Font.BOLD, buton.getFont().getSize());
         buton.setFont(boldFont);
@@ -89,9 +93,48 @@ public class MenuPrincipal extends JFrame {
                 int x = (c.getWidth() - fm.stringWidth(text)) / 2;
                 int y = (c.getHeight() + fm.getAscent()) / 2 - 2;
                 g2.drawString(text, x, y);
+
                 g2.dispose();
             }
         });
+
+
     }
 
+    public void crearTabla(JTable table, String[] columnas) {
+        DefaultTableModel model2 = new DefaultTableModel(columnas, 0);
+        table.setModel(model2);
+
+    }
+
+    public void crearTablas() {
+        String[] columnNames1 = {"Fecha", "Total", "Entrada", "Salida", "Nota"};
+        crearTabla(historialTable, columnNames1);
+        String[] columnNames2 = {"Id", "Nombre", "Talle", "Categoria", "Precio", "Stock"};
+        crearTabla(ropaTable, columnNames2);
+        String[] columnNames3 = {"Id", "Nombre y Apellido", "Dni", "Contacto", "Nota"};
+        crearTabla(clientesTable, columnNames3);
+        String[] columnNames4 = {"Id", "Nombre y Apellido", "Dni", "Contacto", "Nota"};
+        crearTabla(proveedorTable, columnNames4);
+        String[] columnNames5 = {"Id", "Producto", "Talle", "Cantidad", "Precio", "Stock"};
+        crearTabla(ventaTable, columnNames5);
+        String[] columnNames6 = {"Id", "Producto", "Talle", "Cantidad", "Precio de venta", "Precio de compra", "Stock"};
+        crearTabla(compraTable, columnNames6);
+    }
+
+    public void agregarActionListeners() {
+        actualizarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CajaManager.manejoCaja(agregarDineroText, quitarDineroText, historialTable);
+            }
+        });
+
+        buscarFechButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                CajaManager.buscarFechaEnCaja(BuscarFechaText, historialTable);
+            }
+        });
+    }
 }
