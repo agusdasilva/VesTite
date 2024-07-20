@@ -1,12 +1,11 @@
 package InterfazGrafica;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.math.BigDecimal;
-import java.sql.*;
+import java.awt.event.*;
 
 public class MenuPrincipal extends JFrame {
     private JPanel mainPanel;
@@ -18,7 +17,7 @@ public class MenuPrincipal extends JFrame {
     private JButton proveedoresButton;
     private JButton clientesButton;
     private JButton ventaButton;
-    private JTable historialTable;
+    protected JTable cajaTable;
     private JPanel vesTitePanel;
     private JPanel botonesPanel;
     private JPanel extraPanel;
@@ -28,19 +27,38 @@ public class MenuPrincipal extends JFrame {
     private JTextField agregarDineroText;
     private JTextField quitarDineroText;
     private JButton actualizarButton;
-    private JTextField BuscarFechaText;
+    protected JTextField BuscarFechaText;
     private JButton buscarFechButton;
-    private JTabbedPane tabbedPane1;
-    private JButton agregarRopaButton;
-    private JTable ropaTable;
-    private JTable compraTable;
+    protected JTabbedPane tabbedPane1;
+    private JButton agregarProductoButton;
+    protected JTable ropaTable;
+    protected JTable compraTable;
     private JButton comprarButton;
     private JButton agregarClienteButton;
     private JButton agregarProveedorButton;
-    private JButton venderButton;
-    private JTable ventaTable;
-    private JTable clientesTable;
-    private JTable proveedorTable;
+    protected JButton venderButton;
+    protected JTable ventaTable;
+    protected JTable clientesTable;
+    protected JTable proveedorTable;
+    protected JTextField buscarProductoText;
+    protected JTextField nombreProductoText;
+    protected JTextField talleProductoText;
+    protected JTextField categoriaProductoText;
+    protected JTextField precioProductoText;
+    protected JTextField stockProductoText;
+    protected JTextField colorProductoText;
+    protected JComboBox<String> ropaBox;
+    protected JTextField idVentaText;
+    protected JTextField productoVentaText;
+    protected JTextField talleVentaText;
+    protected JTextField cantidadVentaText;
+    protected JTextField precioCantVentaText;
+    protected JTextField colorVentaText;
+    protected JTextField totalVentaText;
+    protected JTextField clienteVentaText;
+    protected JList carritoVentaList;
+    protected JButton carritoButton;
+
 
     public MenuPrincipal() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,6 +67,9 @@ public class MenuPrincipal extends JFrame {
         redondearBotones();
         crearTablas();
         agregarActionListeners();
+        CajaManager.inicializarCajaManager(MenuPrincipal.this);
+        ProductoManager.inicializarProductoManager(MenuPrincipal.this);
+        new VentasManager(MenuPrincipal.this);
 
     }
 
@@ -56,24 +77,25 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(abrirCajaButton);
         redondeoButon(cerrarCajaButton);
         redondeoButon(actualizarButton);
-        redondeoButon(buscarFechButton);
-        redondeoButon(agregarRopaButton);
+        redondeoButon(agregarProductoButton);
         redondeoButon(agregarClienteButton);
         redondeoButon(agregarProveedorButton);
         redondeoButon(comprarButton);
         redondeoButon(venderButton);
+        redondeoButon(carritoButton);
     }
 
-    public void redondeoButon(JButton buton) {
+    public static void redondeoButon(JButton button) {
+        Font boldFont = new Font(button.getFont().getName(), Font.BOLD, button.getFont().getSize());
+        button.setFont(boldFont);
 
-        Font boldFont = new Font(buton.getFont().getName(), Font.BOLD, buton.getFont().getSize());
-        buton.setFont(boldFont);
-        buton.addComponentListener(new java.awt.event.ComponentAdapter() {
+        button.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
-                buton.repaint();
+                button.repaint();
             }
         });
-        buton.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+
+        button.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
             @Override
             public void paint(Graphics g, JComponent c) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -93,14 +115,38 @@ public class MenuPrincipal extends JFrame {
                 int x = (c.getWidth() - fm.stringWidth(text)) / 2;
                 int y = (c.getHeight() + fm.getAscent()) / 2 - 2;
                 g2.drawString(text, x, y);
-
                 g2.dispose();
             }
         });
 
+        // Establecer el borde del botón
+        button.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
+        // Mantener el color de fondo original y cambiar solo temporalmente al interactuar
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            Color originalBackground = button.getBackground();
+
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                button.setBackground(Color.GRAY); // Cambia a gris al hacer clic
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                button.setBackground(originalBackground); // Vuelve al color original
+            }
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(button.getBackground().darker()); // Realza el color al pasar el mouse
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(originalBackground); // Vuelve al color original
+            }
+        });
     }
-
     public void crearTabla(JTable table, String[] columnas) {
         DefaultTableModel model2 = new DefaultTableModel(columnas, 0);
         table.setModel(model2);
@@ -109,14 +155,14 @@ public class MenuPrincipal extends JFrame {
 
     public void crearTablas() {
         String[] columnNames1 = {"Fecha", "Total", "Entrada", "Salida", "Nota"};
-        crearTabla(historialTable, columnNames1);
-        String[] columnNames2 = {"Id", "Nombre", "Talle", "Categoria", "Precio", "Stock"};
+        crearTabla(cajaTable, columnNames1);
+        String[] columnNames2 = {"Id", "Nombre", "Categoria", "Talle", "Precio", "Color", "Stock"};
         crearTabla(ropaTable, columnNames2);
         String[] columnNames3 = {"Id", "Nombre y Apellido", "Dni", "Contacto", "Nota"};
         crearTabla(clientesTable, columnNames3);
         String[] columnNames4 = {"Id", "Nombre y Apellido", "Dni", "Contacto", "Nota"};
         crearTabla(proveedorTable, columnNames4);
-        String[] columnNames5 = {"Id", "Producto", "Talle", "Cantidad", "Precio", "Stock"};
+        String[] columnNames5 = {"Id", "Producto", "Color", "Talle", "Precio", "Stock"};
         crearTabla(ventaTable, columnNames5);
         String[] columnNames6 = {"Id", "Producto", "Talle", "Cantidad", "Precio de venta", "Precio de compra", "Stock"};
         crearTabla(compraTable, columnNames6);
@@ -126,15 +172,18 @@ public class MenuPrincipal extends JFrame {
         actualizarButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CajaManager.manejoCaja(agregarDineroText, quitarDineroText, historialTable);
+                CajaManager.manejoCaja(agregarDineroText, quitarDineroText, cajaTable);
             }
         });
 
-        buscarFechButton.addActionListener(new ActionListener() {
+        agregarProductoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CajaManager.buscarFechaEnCaja(BuscarFechaText, historialTable);
+                ProductoManager.agregarProducto(MenuPrincipal.this);
             }
         });
     }
+
+
+
 }
