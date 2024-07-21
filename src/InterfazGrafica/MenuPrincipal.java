@@ -154,7 +154,7 @@ public class MenuPrincipal extends JFrame {
     }
 
     public void crearTablas() {
-        String[] columnNames1 = {"Fecha", "Total", "Entrada", "Salida", "Nota"};
+        String[] columnNames1 = {"Fecha", "Movimiento", "Monto", "Nota"};
         crearTabla(cajaTable, columnNames1);
         String[] columnNames2 = {"Id", "Nombre", "Categoria", "Talle", "Precio", "Color", "Stock"};
         crearTabla(ropaTable, columnNames2);

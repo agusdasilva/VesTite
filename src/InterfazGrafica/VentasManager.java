@@ -186,7 +186,6 @@ public class VentasManager extends DatosManager {
         }
         menuPrincipal.totalVentaText.setText(total.toString());
     }
-
     private void efectuarCompra() {
         if (carrito.isEmpty()) {
             JOptionPane.showMessageDialog(menuPrincipal, "El carrito está vacío. Agregue productos antes de realizar la venta.");
@@ -200,10 +199,16 @@ public class VentasManager extends DatosManager {
 
         int idVenta = 0;
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "INSERT INTO ventas (fecha_venta, cantidad) VALUES (?, ?)";
+            String sql = "INSERT INTO ventas (fecha_hora, cliente_id) VALUES (?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            stmt.setBigDecimal(2, totalVenta);
+
+            // Supongamos que tienes un campo clienteId en tu interfaz
+            // int clienteId = Integer.parseInt(menuPrincipal.clienteIdText.getText());
+            // Si no tienes un cliente seleccionado, usa un valor por defecto, por ejemplo, 1
+            int clienteId = 1;
+
+            stmt.setInt(2, clienteId);
             stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
@@ -218,7 +223,7 @@ public class VentasManager extends DatosManager {
 
         for (Object[] producto : carrito) {
             try (Connection conn = DatabaseConnection.getConnection()) {
-                String sql = "INSERT INTO ventas (id, id_producto, cantidad, precio) VALUES (?, ?, ?, ?)";
+                String sql = "INSERT INTO detalle_ventas (venta_id, producto_id, cantidad, precio) VALUES (?, ?, ?, ?)";
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.setInt(1, idVenta);
                 stmt.setInt(2, (int) producto[0]);
@@ -233,7 +238,12 @@ public class VentasManager extends DatosManager {
         }
 
         DefaultTableModel cajaModel = (DefaultTableModel) menuPrincipal.cajaTable.getModel();
-        cajaModel.addRow(new Object[]{idVenta, "Venta", totalVenta, new Timestamp(System.currentTimeMillis()), "Venta realizada"});
+        cajaModel.addRow(new Object[]{
+                new Timestamp(System.currentTimeMillis()), // Fecha
+                "Entrada", // Tipo de movimiento
+                totalVenta, // Monto del movimiento
+                "Venta" // Nota
+        });
 
         carrito.clear();
         actualizarCarritoList();
