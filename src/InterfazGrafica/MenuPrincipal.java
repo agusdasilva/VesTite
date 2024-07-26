@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MenuPrincipal extends JFrame {
     private JPanel mainPanel;
@@ -51,7 +53,7 @@ public class MenuPrincipal extends JFrame {
     protected JTextField stockProductoText;
     protected JTextField colorProductoText;
     protected JComboBox<String> ropaBox;
-    //venta
+    // Venta
     protected JList<String> sugerenciaClienteList;
     private JPopupMenu popupMenu = new JPopupMenu();
     protected JButton venderButton;
@@ -60,13 +62,12 @@ public class MenuPrincipal extends JFrame {
     protected JTextField productoVentaText;
     protected JTextField talleVentaText;
     protected JTextField cantidadVentaText;
-    protected JTextField precioCantVentaText;
     protected JTextField colorVentaText;
     protected JTextField totalVentaText;
     protected JTextField clienteVentaText;
     protected JList carritoVentaList;
     protected JButton carritoButton;
-    //cliente
+    // Cliente
     protected JTextField buscadorClienteText;
     protected JTextField nombreClienteText;
     protected JTextField dniClienteText;
@@ -74,7 +75,6 @@ public class MenuPrincipal extends JFrame {
     protected JTextField notaClienteText;
     protected JButton agregarClienteButton;
     protected JTable clientesTable;
-
 
     public MenuPrincipal() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -146,6 +146,7 @@ public class MenuPrincipal extends JFrame {
             return;
         }
 
+        List<String> sugerencias = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql = "SELECT nombre FROM clientes WHERE nombre LIKE ?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -153,23 +154,29 @@ public class MenuPrincipal extends JFrame {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                String nombreCliente = rs.getString("nombre");
-                JMenuItem item = new JMenuItem(nombreCliente);
-                item.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        clienteVentaText.setText(nombreCliente);
-                        popupMenu.setVisible(false);
-                    }
-                });
-                popupMenu.add(item);
+                sugerencias.add(rs.getString("nombre"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        if (popupMenu.getComponentCount() > 0) {
+        if (!sugerencias.isEmpty()) {
+            sugerenciaClienteList = new JList<>(sugerencias.toArray(new String[0]));
+            sugerenciaClienteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            sugerenciaClienteList.setFocusable(false);
+            sugerenciaClienteList.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        seleccionarClienteSugerido();
+                    }
+                }
+            });
+
+            JScrollPane scrollPane = new JScrollPane(sugerenciaClienteList);
+            popupMenu.add(scrollPane);
             popupMenu.show(clienteVentaText, 0, clienteVentaText.getHeight());
+            clienteVentaText.requestFocusInWindow();
         } else {
             popupMenu.setVisible(false);
         }
@@ -182,6 +189,7 @@ public class MenuPrincipal extends JFrame {
             popupMenu.setVisible(false);
         }
     }
+
     private void agregarCambioPestanas() {
         cajaButton.addActionListener(new ActionListener() {
             @Override
@@ -328,7 +336,4 @@ public class MenuPrincipal extends JFrame {
             }
         });
     }
-
-
-
 }
