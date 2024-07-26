@@ -20,7 +20,6 @@ public class MenuPrincipal extends JFrame {
     private JButton ajustesButton;
     private JButton salirButton;
     private JButton cajaButton;
-    private JButton categoriasButton;
     private JButton productosButton;
     private JButton proveedoresButton;
     private JButton clientesButton;
@@ -33,8 +32,6 @@ public class MenuPrincipal extends JFrame {
     private JButton actualizarButton;
     protected JTabbedPane tabbedPane1;
     protected JTable compraTable;
-    private JButton comprarButton;
-    private JButton agregarProveedorButton;
     protected JTable proveedorTable;
     //caja
     protected JButton cerrarCajaButton;
@@ -230,8 +227,6 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(actualizarButton);
         redondeoButon(agregarProductoButton);
         redondeoButon(agregarClienteButton);
-        redondeoButon(agregarProveedorButton);
-        redondeoButon(comprarButton);
         redondeoButon(venderButton);
         redondeoButon(carritoButton);
     }
