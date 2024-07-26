@@ -88,7 +88,7 @@ public class ProductoManager extends DatosManager {
     }
 
     public static void inicializarProductoManager(MenuPrincipal aux) {
-        agregarDocumentListener(aux.ropaTable,aux.buscarProductoText);
+        agregarDocumentListener(aux.ropaTable, aux.buscarProductoText);
         ropaComboBoxListener(aux);
         agregarTableModelListener(aux.ropaTable, new TableModelListener() {
             @Override
@@ -117,6 +117,8 @@ public class ProductoManager extends DatosManager {
                 }
             }
         });
+
+        cargarDatosRopaTable(aux, true); // Cargar datos inicialmente con productos con stock
     }
 
     public static void ropaComboBoxListener(MenuPrincipal aux) {
@@ -133,6 +135,7 @@ public class ProductoManager extends DatosManager {
             }
         });
     }
+
     public static void cargarDatosVentaTable(MenuPrincipal aux) {
         DefaultTableModel model = (DefaultTableModel) aux.ventaTable.getModel();
         model.setRowCount(0); // Limpiar tabla antes de cargar
@@ -145,7 +148,7 @@ public class ProductoManager extends DatosManager {
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String nombre = rs.getString("nombre");
-                //String categoria = rs.getString("categoria");
+                // String categoria = rs.getString("categoria");
                 String color = rs.getString("color");
                 String talle = rs.getString("talle");
                 BigDecimal precio = rs.getBigDecimal("precio");

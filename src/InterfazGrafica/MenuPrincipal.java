@@ -3,9 +3,15 @@ package InterfazGrafica;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class MenuPrincipal extends JFrame {
     private JPanel mainPanel;
@@ -22,32 +28,34 @@ public class MenuPrincipal extends JFrame {
     private JPanel botonesPanel;
     private JPanel extraPanel;
     private JPanel datosPanel;
-    private JButton abrirCajaButton;
-    private JButton cerrarCajaButton;
-    private JTextField agregarDineroText;
-    private JTextField quitarDineroText;
     private JButton actualizarButton;
-    protected JTextField BuscarFechaText;
-    private JButton buscarFechButton;
     protected JTabbedPane tabbedPane1;
-    private JButton agregarProductoButton;
-    protected JTable ropaTable;
     protected JTable compraTable;
     private JButton comprarButton;
-    private JButton agregarClienteButton;
     private JButton agregarProveedorButton;
-    protected JButton venderButton;
-    protected JTable ventaTable;
-    protected JTable clientesTable;
     protected JTable proveedorTable;
+    //caja
+    protected JButton abrirCajaButton;
+    protected JButton cerrarCajaButton;
+    private JTextField agregarDineroText;
+    private JTextField quitarDineroText;
+    protected JTextField BuscarFechaText;
+    //producto
+    protected JTable ropaTable;
     protected JTextField buscarProductoText;
     protected JTextField nombreProductoText;
     protected JTextField talleProductoText;
+    private JButton agregarProductoButton;
     protected JTextField categoriaProductoText;
     protected JTextField precioProductoText;
     protected JTextField stockProductoText;
     protected JTextField colorProductoText;
     protected JComboBox<String> ropaBox;
+    //venta
+    protected JList<String> sugerenciaClienteList;
+    private JPopupMenu popupMenu = new JPopupMenu();
+    protected JButton venderButton;
+    protected JTable ventaTable;
     protected JTextField idVentaText;
     protected JTextField productoVentaText;
     protected JTextField talleVentaText;
@@ -58,6 +66,14 @@ public class MenuPrincipal extends JFrame {
     protected JTextField clienteVentaText;
     protected JList carritoVentaList;
     protected JButton carritoButton;
+    //cliente
+    protected JTextField buscadorClienteText;
+    protected JTextField nombreClienteText;
+    protected JTextField dniClienteText;
+    protected JTextField contactoClienteText;
+    protected JTextField notaClienteText;
+    protected JButton agregarClienteButton;
+    protected JTable clientesTable;
 
 
     public MenuPrincipal() {
@@ -70,9 +86,138 @@ public class MenuPrincipal extends JFrame {
         CajaManager.inicializarCajaManager(MenuPrincipal.this);
         ProductoManager.inicializarProductoManager(MenuPrincipal.this);
         new VentasManager(MenuPrincipal.this);
+        new ClienteManager(MenuPrincipal.this);
 
+        // Agregar action listeners para cambiar pestañas
+        agregarCambioPestanas();
+
+        clienteVentaText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                popupMenu.setVisible(false); // Ocultar el popup cuando el JTextField pierde el foco
+            }
+        });
+
+        clienteVentaText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    // Navegar hacia abajo en el menú de sugerencias con la tecla de flecha hacia abajo
+                    int selectedIndex = sugerenciaClienteList.getSelectedIndex();
+                    if (selectedIndex < sugerenciaClienteList.getModel().getSize() - 1) {
+                        sugerenciaClienteList.setSelectedIndex(selectedIndex + 1);
+                    }
+                } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    // Navegar hacia arriba en el menú de sugerencias con la tecla de flecha hacia arriba
+                    int selectedIndex = sugerenciaClienteList.getSelectedIndex();
+                    if (selectedIndex > 0) {
+                        sugerenciaClienteList.setSelectedIndex(selectedIndex - 1);
+                    }
+                } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    // Seleccionar el cliente con la tecla Enter
+                    seleccionarClienteSugerido();
+                }
+            }
+        });
+
+        clienteVentaText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes();
+            }
+        });
     }
 
+    private void actualizarSugerenciasClientes() {
+        String texto = clienteVentaText.getText();
+        popupMenu.removeAll();
+        if (texto.isEmpty() || texto.length() <= 1) {
+            popupMenu.setVisible(false);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT nombre FROM clientes WHERE nombre LIKE ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + texto + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String nombreCliente = rs.getString("nombre");
+                JMenuItem item = new JMenuItem(nombreCliente);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        clienteVentaText.setText(nombreCliente);
+                        popupMenu.setVisible(false);
+                    }
+                });
+                popupMenu.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (popupMenu.getComponentCount() > 0) {
+            popupMenu.show(clienteVentaText, 0, clienteVentaText.getHeight());
+        } else {
+            popupMenu.setVisible(false);
+        }
+    }
+
+    private void seleccionarClienteSugerido() {
+        String clienteSeleccionado = sugerenciaClienteList.getSelectedValue();
+        if (clienteSeleccionado != null) {
+            clienteVentaText.setText(clienteSeleccionado);
+            popupMenu.setVisible(false);
+        }
+    }
+    private void agregarCambioPestanas() {
+        cajaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane1.setSelectedIndex(0); // Índice de la pestaña "Caja"
+            }
+        });
+
+        clientesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane1.setSelectedIndex(3); // Índice de la pestaña "Clientes"
+            }
+        });
+
+        ventaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane1.setSelectedIndex(1); // Índice de la pestaña "Ventas"
+            }
+        });
+
+        productosButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane1.setSelectedIndex(5); // Índice de la pestaña "Productos"
+            }
+        });
+
+        salirButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0); // Salir del programa
+            }
+        });
+    }
     public void redondearBotones() {
         redondeoButon(abrirCajaButton);
         redondeoButon(cerrarCajaButton);
@@ -154,7 +299,7 @@ public class MenuPrincipal extends JFrame {
     }
 
     public void crearTablas() {
-        String[] columnNames1 = {"Fecha", "Movimiento", "Monto", "Nota"};
+        String[] columnNames1 = {"Fecha", "Movimiento", "Monto"};
         crearTabla(cajaTable, columnNames1);
         String[] columnNames2 = {"Id", "Nombre", "Categoria", "Talle", "Precio", "Color", "Stock"};
         crearTabla(ropaTable, columnNames2);

@@ -1,5 +1,12 @@
 package InterfazGrafica;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -9,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,6 +27,8 @@ import java.util.regex.Pattern;
 public class VentasManager extends DatosManager {
     private final MenuPrincipal menuPrincipal;
     private final List<Object[]> carrito;
+    private JPopupMenu popupMenu = new JPopupMenu();
+    private DefaultListModel<String> listModel = new DefaultListModel<>();
 
     public VentasManager(MenuPrincipal menuPrincipal) {
         this.menuPrincipal = menuPrincipal;
@@ -63,6 +74,8 @@ public class VentasManager extends DatosManager {
                 efectuarCompra();
             }
         });
+
+        agregarAutocompletadoCliente(menuPrincipal.clienteVentaText);
     }
 
     private void agregarDocumentListener(JTextField textField, int columnIndex) {
@@ -186,6 +199,7 @@ public class VentasManager extends DatosManager {
         }
         menuPrincipal.totalVentaText.setText(total.toString());
     }
+
     private void efectuarCompra() {
         if (carrito.isEmpty()) {
             JOptionPane.showMessageDialog(menuPrincipal, "El carrito está vacío. Agregue productos antes de realizar la venta.");
@@ -198,15 +212,23 @@ public class VentasManager extends DatosManager {
         }
 
         int idVenta = 0;
+        String clienteNombre = "";
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql = "INSERT INTO ventas (fecha_hora, cliente_id) VALUES (?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 
-            // Supongamos que tienes un campo clienteId en tu interfaz
-            // int clienteId = Integer.parseInt(menuPrincipal.clienteIdText.getText());
-            // Si no tienes un cliente seleccionado, usa un valor por defecto, por ejemplo, 1
-            int clienteId = 1;
+            int clienteId;
+            try {
+                clienteId = Integer.parseInt(menuPrincipal.clienteVentaText.getText().trim());
+                if (!esClienteValido(clienteId)) {
+                    JOptionPane.showMessageDialog(menuPrincipal, "El ID del cliente no es válido.");
+                    return;
+                }
+                clienteNombre = obtenerNombreCliente(clienteId);
+            } catch (NumberFormatException e) {
+                clienteId = 0;  // ID del cliente no proporcionado o no válido
+            }
 
             stmt.setInt(2, clienteId);
             stmt.executeUpdate();
@@ -232,31 +254,151 @@ public class VentasManager extends DatosManager {
                 stmt.executeUpdate();
             } catch (SQLException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(menuPrincipal, "Error al registrar los productos vendidos en la base de datos.");
-                return;
+                JOptionPane.showMessageDialog(menuPrincipal, "Error al registrar el detalle de la venta en la base de datos.");
             }
         }
 
-        DefaultTableModel cajaModel = (DefaultTableModel) menuPrincipal.cajaTable.getModel();
-        cajaModel.addRow(new Object[]{
-                new Timestamp(System.currentTimeMillis()), // Fecha
-                "Entrada", // Tipo de movimiento
-                totalVenta, // Monto del movimiento
-                "Venta" // Nota
-        });
+        generarPDFFactura(idVenta, clienteNombre, totalVenta);
 
         carrito.clear();
         actualizarCarritoList();
         actualizarTotalVenta();
-
-        JOptionPane.showMessageDialog(menuPrincipal, "Venta realizada con éxito.");
     }
 
-    public static void agregarPopupMenu(JTable table, ActionListener deleteListener) {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem deleteItem = new JMenuItem("Eliminar");
-        deleteItem.addActionListener(deleteListener);
-        popupMenu.add(deleteItem);
-        table.setComponentPopupMenu(popupMenu);
+    private boolean esClienteValido(int clienteId) {
+        boolean valido = false;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT COUNT(*) FROM clientes WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, clienteId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                valido = rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return valido;
     }
+
+    private String obtenerNombreCliente(int clienteId) {
+        String nombre = "";
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT nombre FROM clientes WHERE id = ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setInt(1, clienteId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                nombre = rs.getString("nombre");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nombre;
+    }
+
+    private void generarPDFFactura(int idVenta, String clienteNombre, BigDecimal totalVenta) {
+        Document document = new Document();
+        try {
+            PdfWriter.getInstance(document, new FileOutputStream("factura_" + idVenta + ".pdf"));
+            document.open();
+
+            document.add(new Paragraph("Factura de Venta\n\n"));
+            document.add(new Paragraph("ID Venta: " + idVenta));
+            document.add(new Paragraph("Cliente: " + clienteNombre));
+            document.add(new Paragraph("Fecha: " + new Timestamp(System.currentTimeMillis())));
+            document.add(new Paragraph("\nProductos:\n"));
+
+            PdfPTable table = new PdfPTable(5);
+            table.addCell(new PdfPCell(new Paragraph("ID Producto")));
+            table.addCell(new PdfPCell(new Paragraph("Nombre")));
+            table.addCell(new PdfPCell(new Paragraph("Color")));
+            table.addCell(new PdfPCell(new Paragraph("Talle")));
+            table.addCell(new PdfPCell(new Paragraph("Cantidad")));
+
+            for (Object[] producto : carrito) {
+                table.addCell(producto[0].toString());
+                table.addCell(producto[1].toString());
+                table.addCell(producto[2].toString());
+                table.addCell(producto[3].toString());
+                table.addCell(producto[4].toString());
+            }
+
+            document.add(table);
+            document.add(new Paragraph("\nTotal: " + totalVenta.toString()));
+
+        } catch (DocumentException | IOException e) {
+            e.printStackTrace();
+        } finally {
+            document.close();
+        }
+    }
+
+    public void agregarAutocompletadoCliente(JTextField textField) {
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes(textField.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes(textField.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                actualizarSugerenciasClientes(textField.getText());
+            }
+        });
+    }
+
+    public void actualizarSugerenciasClientes(String texto) {
+        popupMenu.removeAll();
+        if (texto.isEmpty() || texto.length() <= 1) {
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT nombre FROM clientes WHERE nombre LIKE ?";
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, "%" + texto + "%");
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String nombreCliente = rs.getString("nombre");
+                JMenuItem item = new JMenuItem(nombreCliente);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        menuPrincipal.clienteVentaText.setText(nombreCliente);
+                        popupMenu.setVisible(false);
+                    }
+                });
+                popupMenu.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (popupMenu.getComponentCount() > 0) {
+            popupMenu.show(menuPrincipal.clienteVentaText, 0, menuPrincipal.clienteVentaText.getHeight());
+        }
+    }
+    protected static List<String> obtenerSugerenciasCliente(String texto) {
+        List<String> sugerencias = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT nombre FROM clientes WHERE nombre LIKE ?";
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, texto + "%");
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                sugerencias.add(rs.getString("nombre"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sugerencias;
+    }
+
 }
