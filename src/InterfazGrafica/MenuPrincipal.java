@@ -37,7 +37,6 @@ public class MenuPrincipal extends JFrame {
     private JButton agregarProveedorButton;
     protected JTable proveedorTable;
     //caja
-    protected JButton abrirCajaButton;
     protected JButton cerrarCajaButton;
     private JTextField agregarDineroText;
     private JTextField quitarDineroText;
@@ -227,7 +226,6 @@ public class MenuPrincipal extends JFrame {
         });
     }
     public void redondearBotones() {
-        redondeoButon(abrirCajaButton);
         redondeoButon(cerrarCajaButton);
         redondeoButon(actualizarButton);
         redondeoButon(agregarProductoButton);
