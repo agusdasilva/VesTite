@@ -105,27 +105,6 @@ public class CajaManager extends DatosManager {
             JOptionPane.showMessageDialog(null, "Error al cargar los datos de la base de datos.");
         }
     }
-
-    public static void cargarDatosCaja(JTable cajaTable) {
-        DefaultTableModel cajaModel = (DefaultTableModel) cajaTable.getModel();
-        cajaModel.setRowCount(0); // Limpiar datos actuales
-
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = "SELECT fecha_hora, tipo_movimiento, cantidad FROM caja";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Timestamp fecha = rs.getTimestamp("fecha_hora");
-                String tipo = rs.getString("tipo_movimiento");
-                BigDecimal monto = rs.getBigDecimal("cantidad");
-                cajaModel.addRow(new Object[]{fecha, tipo, monto});
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void inicializarCajaManager(MenuPrincipal aux) {
         cargarDatosPorFecha(aux.cajaTable, new Date()); // Cargar datos del día actual
 

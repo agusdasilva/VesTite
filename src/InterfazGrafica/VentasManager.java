@@ -27,11 +27,13 @@ import java.util.regex.Pattern;
 public class VentasManager extends DatosManager {
     private final MenuPrincipal menuPrincipal;
     private final List<Object[]> carrito;
+    private AjustesManager ajustesManager;
     private JPopupMenu popupMenu = new JPopupMenu();
     private DefaultListModel<String> listModel = new DefaultListModel<>();
 
-    public VentasManager(MenuPrincipal menuPrincipal) {
+    public VentasManager(MenuPrincipal menuPrincipal, AjustesManager ajustesManager) {
         this.menuPrincipal = menuPrincipal;
+        this.ajustesManager = ajustesManager;
         this.carrito = new ArrayList<>();
         this.rowSorter = new TableRowSorter<>((DefaultTableModel) menuPrincipal.ventaTable.getModel());
         menuPrincipal.ventaTable.setRowSorter(rowSorter);
@@ -307,6 +309,11 @@ public class VentasManager extends DatosManager {
             document.add(new Paragraph("ID Venta: " + idVenta));
             document.add(new Paragraph("Cliente: " + clienteNombre));
             document.add(new Paragraph("Fecha: " + new Timestamp(System.currentTimeMillis())));
+            document.add(new Paragraph("\nDatos del Local:\n"));
+            document.add(new Paragraph("Nombre del Local: " + ajustesManager.getNombreLocal()));
+            document.add(new Paragraph("Dirección: " + ajustesManager.getDireccionLocal()));
+            document.add(new Paragraph("Contacto: " + ajustesManager.getContactoLocal()));
+            document.add(new Paragraph("Mensaje: " + ajustesManager.getMensajeLocal()));
             document.add(new Paragraph("\nProductos:\n"));
 
             PdfPTable table = new PdfPTable(5);

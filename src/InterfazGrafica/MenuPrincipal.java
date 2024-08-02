@@ -1,8 +1,6 @@
 package InterfazGrafica;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -33,6 +31,7 @@ public class MenuPrincipal extends JFrame {
     protected JTabbedPane tabbedPane1;
     protected JTable compraTable;
     protected JTable proveedorTable;
+    protected JButton agregarProveedorButton;
     //caja
     protected JButton cerrarCajaButton;
     private JTextField agregarDineroText;
@@ -71,6 +70,12 @@ public class MenuPrincipal extends JFrame {
     protected JTextField notaClienteText;
     protected JButton agregarClienteButton;
     protected JTable clientesTable;
+    //
+    protected JTextField nombreLocalText;
+    protected JTextField direccionLocalText;
+    protected JTextField contactoLocalText;
+    protected JTextField mensajeLocalText;
+    protected JButton actualizarLocalButton;
 
     public MenuPrincipal() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -81,9 +86,8 @@ public class MenuPrincipal extends JFrame {
         agregarActionListeners();
         CajaManager.inicializarCajaManager(MenuPrincipal.this);
         ProductoManager.inicializarProductoManager(MenuPrincipal.this);
-        new VentasManager(MenuPrincipal.this);
+        new VentasManager(MenuPrincipal.this, new AjustesManager(MenuPrincipal.this));
         new ClienteManager(MenuPrincipal.this);
-
         // Agregar action listeners para cambiar pestañas
         agregarCambioPestanas();
 
@@ -197,7 +201,7 @@ public class MenuPrincipal extends JFrame {
         clientesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tabbedPane1.setSelectedIndex(3); // Índice de la pestaña "Clientes"
+                tabbedPane1.setSelectedIndex(2); // Índice de la pestaña "Clientes"
             }
         });
 
@@ -211,10 +215,16 @@ public class MenuPrincipal extends JFrame {
         productosButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tabbedPane1.setSelectedIndex(5); // Índice de la pestaña "Productos"
+                tabbedPane1.setSelectedIndex(4); // Índice de la pestaña "Productos"
             }
         });
 
+        ajustesButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabbedPane1.setSelectedIndex(5); // Índice de la pestaña "Ajustes"
+            }
+        });
         salirButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -229,6 +239,7 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(agregarClienteButton);
         redondeoButon(venderButton);
         redondeoButon(carritoButton);
+        redondeoButon(actualizarLocalButton);
     }
 
     public static void redondeoButon(JButton button) {
@@ -310,8 +321,6 @@ public class MenuPrincipal extends JFrame {
         crearTabla(proveedorTable, columnNames4);
         String[] columnNames5 = {"Id", "Producto", "Color", "Talle", "Precio", "Stock"};
         crearTabla(ventaTable, columnNames5);
-        String[] columnNames6 = {"Id", "Producto", "Talle", "Cantidad", "Precio de venta", "Precio de compra", "Stock"};
-        crearTabla(compraTable, columnNames6);
     }
 
     public void agregarActionListeners() {
