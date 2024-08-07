@@ -70,12 +70,14 @@ public class MenuPrincipal extends JFrame {
     protected JTextField notaClienteText;
     protected JButton agregarClienteButton;
     protected JTable clientesTable;
-    //
+    //Local
     protected JTextField nombreLocalText;
     protected JTextField direccionLocalText;
     protected JTextField contactoLocalText;
     protected JTextField mensajeLocalText;
     protected JButton actualizarLocalButton;
+    protected JButton exportarLocalButton;
+    protected JButton importarLocalButton;
 
     public MenuPrincipal() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -90,6 +92,8 @@ public class MenuPrincipal extends JFrame {
         new ClienteManager(MenuPrincipal.this);
         // Agregar action listeners para cambiar pestañas
         agregarCambioPestanas();
+
+        ocultarPestanas(tabbedPane1);
 
         clienteVentaText.addFocusListener(new FocusAdapter() {
             @Override
@@ -240,6 +244,8 @@ public class MenuPrincipal extends JFrame {
         redondeoButon(venderButton);
         redondeoButon(carritoButton);
         redondeoButon(actualizarLocalButton);
+        redondeoButon(exportarLocalButton);
+        redondeoButon(importarLocalButton);
     }
 
     public static void redondeoButon(JButton button) {
@@ -335,6 +341,30 @@ public class MenuPrincipal extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ProductoManager.agregarProducto(MenuPrincipal.this);
+            }
+        });
+    }
+    private void ocultarPestanas(JTabbedPane tabbedPane) {
+        tabbedPane.setUI(new javax.swing.plaf.basic.BasicTabbedPaneUI() {
+            @Override
+            protected void installDefaults() {
+                super.installDefaults();
+                tabAreaInsets = new Insets(0, 0, 0, 0);
+                tabInsets = new Insets(0, 0, 0, 0);
+            }
+
+            @Override
+            protected int calculateTabHeight(int tabPlacement, int tabIndex, int fontHeight) {
+                return 0;
+            }
+
+            @Override
+            protected int calculateTabWidth(int tabPlacement, int tabIndex, FontMetrics metrics) {
+                return 0;
+            }
+
+            @Override
+            protected void paintTabArea(Graphics g, int tabPlacement, int selectedIndex) {
             }
         });
     }
