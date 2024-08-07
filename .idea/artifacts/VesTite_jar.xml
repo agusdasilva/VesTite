@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="VesTite:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/VesTite_jar</output-path>
+    <root id="archive" name="VesTite.jar">
+      <element id="module-output" name="VesTite" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/itextpdf-5.5.13.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/mysql-connector-j-8.4.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
